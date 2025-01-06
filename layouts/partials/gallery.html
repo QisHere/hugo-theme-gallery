@@ -1,4 +1,24 @@
 <section class="gallery">
+  <style>
+    .gallery-item figure {
+      position: relative;
+    }
+    .gallery-item figure::after {
+      content: attr(data-description);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .gallery-item:hover figure::after {
+      opacity: 1;
+    }
+  </style>
   <div id="gallery" style="visibility: hidden; height: 1px; overflow: hidden">
     {{ $images := slice }}
     {{ range $image := .Resources.ByType "image" }}
@@ -7,16 +27,13 @@
       {{ with $image.Exif }}
         {{ $date = .Date }}
         {{ with .Tags.ImageDescription }}
-          {{/* Title from EXIF ImageDescription */}}
           {{ $title = . }}
         {{ end }}
       {{ end }}
       {{ if ne $image.Title $image.Name }}
-        {{/* Title from front matter */}}
-        {{ $title = $image.Title }}
+        {{ $title = $image.Params.description }}
       {{ end }}
       {{ if $image.Params.Date }}
-        {{/* Date from front matter */}}
         {{ $date = time $image.Params.Date }}
       {{ end }}
       {{ $images = $images | append (dict
@@ -33,9 +50,9 @@
       {{ $thumbnail := $image.Filter (slice images.AutoOrient (images.Process "fit 600x600")) }}
       {{ $full := $image.Filter (slice images.AutoOrient (images.Process "fit 1600x1600")) }}
       {{ $color := index $thumbnail.Colors 0 | default "transparent" }}
-      <a class="gallery-item" href="{{ $image.RelPermalink }}" data-pswp-src="{{ $full.RelPermalink }}" data-pswp-width="{{ $full.Width }}" data-pswp-height="{{ $full.Height }}" data-pswp-target="{{ $image.Name | urlize }}" title="{{ .Title }}" itemscope itemtype="https://schema.org/ImageObject" style="aspect-ratio: {{ $thumbnail.Width }} / {{ $thumbnail.Height }}">
-        <figure style="background-color: {{ $color }}; aspect-ratio: {{ $thumbnail.Width }} / {{ $thumbnail.Height }}">
-          <img class="lazyload" width="{{ $thumbnail.Width }}" height="{{ $thumbnail.Height }}" data-src="{{ $thumbnail.RelPermalink }}" alt="{{ .Title }}" />
+      <a class="gallery-item" href="{{ $image.RelPermalink }}" data-pswp-src="{{ $full.RelPermalink }}" data-pswp-width="{{ $full.Width }}" data-pswp-height="{{ $full.Height }}" data-pswp-target="{{ $image.Name | urlize }}" data-pswp-caption="{{ .Params.description }}" itemscope itemtype="https://schema.org/ImageObject" style="aspect-ratio: {{ $thumbnail.Width }} / {{ $thumbnail.Height }}">
+        <figure style="background-color: {{ $color }}; aspect-ratio: {{ $thumbnail.Width }} / {{ $thumbnail.Height }}" {{ with .Params.description }}data-description="{{ . }}"{{ end }}>
+          <img class="lazyload" width="{{ $thumbnail.Width }}" height="{{ $thumbnail.Height }}" data-src="{{ $thumbnail.RelPermalink }}" alt="{{ .Params.description }}" />
         </figure>
         <meta itemprop="contentUrl" content="{{ $image.RelPermalink }}" />
         {{ with site.Params.Author }}
