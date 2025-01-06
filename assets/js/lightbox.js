@@ -54,7 +54,7 @@ if (gallery) {
 
   new PhotoSwipeDynamicCaption(lightbox, {
     mobileLayoutBreakpoint: 700,
-    type: "auto",
+    type: "below",
     mobileCaptionOverlapRatio: 1,
   });
 
